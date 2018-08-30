@@ -1,0 +1,84 @@
+package scripts.api.crud;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HTTP;
+import org.apache.http.util.EntityUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.testng.annotations.Test;
+import utilities.TestGroupTags;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class TestRestRequest {
+
+    HttpClient client = null;
+    HttpRequestBase request = null;
+    String url = null;
+
+
+    @Test(testName = "testPostRequest", groups = {TestGroupTags.REGRESSION, TestGroupTags.SMOKE}, priority = 1)
+    public void testPostRequest() throws IOException, URISyntaxException {
+        url = "https://maps.googleapis.com/maps/api/place/add/json";
+        URIBuilder builder = new URIBuilder(url);
+        builder.addParameter("key", "AIzaSyANkZjxhgoy2R7PJnYyPeTKSAJMMPIMHs8");
+        client = HttpClientBuilder.create().build();
+        HttpPost request = new HttpPost(builder.build());
+        System.out.println(request.getURI().toURL().toString());
+        HttpResponse response = client.execute(request);
+
+        String jsonText = EntityUtils.toString(response.getEntity());
+        System.out.println(jsonText);
+
+
+
+
+
+
+
+
+
+    }
+
+    @Test(testName = "testGetRequest", groups = {TestGroupTags.REGRESSION, TestGroupTags.SMOKE}, priority = 2)
+    public void testGetRequest() throws URISyntaxException, IOException, ParseException {
+        url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
+        client = HttpClientBuilder.create().build();
+        URIBuilder builder = new URIBuilder(url);
+        builder.addParameter("location", "12.916260, 77.607027");
+        builder.addParameter("radius", "145");
+        builder.addParameter("type", "atm");
+        builder.addParameter("key", "AIzaSyANkZjxhgoy2R7PJnYyPeTKSAJMMPIMHs8");
+        request = new HttpGet(builder.build());
+        System.out.println(request.getURI().toURL().toString());
+        HttpResponse response = client.execute(request);
+        System.out.println(response.getStatusLine());
+        String jsonText = EntityUtils.toString(response.getEntity());
+        JSONParser parser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) parser.parse(jsonText);
+        System.out.println("Status : " + jsonObject.get("status"));
+        JSONArray array = (JSONArray) jsonObject.get("results");
+        System.out.println(array.size());
+        for (int i = 0; i < array.size(); i++) {
+            JSONObject object = (JSONObject) array.get(i);
+            System.out.println(object.get("name"));
+        }
+    }
+
+}
